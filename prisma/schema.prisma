@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum roleAdmin {
+  admin
+}
+
+enum AvailableStatus {
+  active
+  inactive
+}
+
+model admin {
+  id           Int             @id @default(autoincrement())
+  password     String
+  role         roleAdmin       @default(admin)
+  userName     String          @unique
+  permission   String          @db.LongText
+  avatar       String          @db.LongText
+  email        String          @unique
+  ipList       String          @default("[]")
+  createTime   String
+  updateTime   String
+  emailConfirm AvailableStatus @default(inactive)
+  chatList     Chat[]
+}
+
+enum Partner {
+  Yes
+  No
+}
+
+model user {
+  id           Int             @id @default(autoincrement())
+  userName     String          @unique
+  firstName    String?
+  lastName     String?
+  email        String          @unique
+  isParnert    Partner         @default(No)
+  avatar       String          @db.LongText
+  password     String
+  address      String?
+  gioitinh     String?
+  DayBrith     String?
+  cccd         String?
+  Phone        String?
+  ipList       String          @default("[]")
+  ip_list      ip_list[]
+  emailConfirm AvailableStatus @default(inactive)
+  bookings     booking[]
+  statusImg    StatusCitizen   @default(inactive)
+  createAt     String
+  updateAt     String
+  hotel        hotel[]
+  chatList     Chat[]
+  imgcitizen   String?         @db.LongText
+}
+
+enum StatusCitizen {
+  active
+  inactive
+  pending
+}
+
+model ip_list {
+  id         Int     @id @default(autoincrement())
+  ip         String  @db.Char(255)
+  status     Boolean @default(true)
+  userId     Int
+  createAt   String
+  deviceName String
+  users      user    @relation(fields: [userId], references: [id])
+}
+
+enum hotelStatus {
+  active
+  inactive
+  delete
+}
+
+model hotel {
+  id                  Int            @id @default(autoincrement())
+  name                String         @db.Text
+  type                String
+  image               String         @db.LongText
+  address             String
+  distance            String
+  city                String
+  contact             String?        @db.LongText
+  cheapestprice       Int
+  status              hotelStatus    @default(active)
+  locationDescription String         @db.LongText
+  details             hotelDetails[]
+  createAt            DateTime       @default(now())
+  updateAt            DateTime       @updatedAt
+  reason              String?
+  bookings            booking[]
+  userId              Int
+  user                user           @relation(fields: [userId], references: [id])
+  room                room[]
+  img                 img[]
+}
+
+model img {
+  id      Int    @id @default(autoincrement())
+  imgUrl  String @db.LongText
+  hotelId Int
+  hotel   hotel  @relation(fields: [hotelId], references: [id])
+}
+
+model hotelDetails {
+  id           Int     @id @default(autoincrement())
+  swimmingPool Boolean @default(false)
+  gym          Boolean @default(false)
+  restaurant   Boolean @default(false)
+  bar          Boolean @default(false)
+  freeParking  Boolean @default(false)
+  hotel        hotel?  @relation(fields: [hotelId], references: [id])
+  hotelId      Int?
+}
+
+enum StatusSelect {
+  Yes
+  No
+}
+
+model room {
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String       @db.LongText
+  bedCount      Int          @default(0)
+  guestCount    Int          @default(0)
+  adult         Int          @default(0)
+  child         Int          @default(0)
+  bathroomCount Int          @default(0)
+  image         String       @db.LongText
+  roomPrice     Int          @default(0)
+  freezer       StatusSelect @default(No)
+  heater        StatusSelect @default(No)
+  freewifi      StatusSelect @default(No)
+  roomService   StatusSelect @default(No)
+  TV            StatusSelect @default(No)
+  beachView     StatusSelect @default(No)
+  mountainView  StatusSelect @default(No)
+  cityView      StatusSelect @default(No)
+  hotel         hotel?       @relation(fields: [hotelId], references: [id])
+  hotelId       Int?
+  imgroom       imgroom[]
+}
+
+model imgroom {
+  id     Int    @id @default(autoincrement())
+  imgUrl String @db.LongText
+  roomId Int
+  room   room?  @relation(fields: [roomId], references: [id])
+}
+
+model booking {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  startDate     DateTime
+  endDate       DateTime
+  totalPrice    Int
+  paymentStatus Boolean  @default(false)
+  paymentMethod Int      @unique
+  bookAt        DateTime @default(now())
+  roomId        Int
+  user          user     @relation(fields: [userId], references: [id])
+  hotel         hotel?   @relation(fields: [hotelId], references: [id])
+  hotelId       Int?
+}
+
+enum ChatType {
+  TEXT
+  IMG
+  VIDEO
+  LINK
+}
+
+model Chat {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  user           user     @relation(fields: [userId], references: [id])
+  adminId        Int?
+  admin          admin?   @relation(fields: [adminId], references: [id])
+  content        String
+  type           ChatType @default(TEXT)
+  createAt       String
+  discordChannel String
+}
